@@ -1,0 +1,183 @@
+DROP DATABASE IF EXISTS esthetic;
+
+CREATE DATABASE esthetic;
+
+USE esthetic;
+
+CREATE TABLE esthetic.PERSON (
+	id INT NOT NULL UNIQUE AUTO_INCREMENT,
+	first_name VARCHAR(50) NOT NULL,
+	last_name VARCHAR(50) NOT NULL,
+    birthdate DATE NOT NULL,
+    document VARCHAR(9) NOT NULL,
+    type_document VARCHAR(8) NOT NULL DEFAULT 'DNI',
+    phone CHAR(30),
+    PRIMARY KEY(id)
+);
+
+CREATE TABLE esthetic.USER (
+	id INT NOT NULL UNIQUE AUTO_INCREMENT,
+	id_person INT NOT NULL UNIQUE,
+	role VARCHAR(6) NOT NULL DEFAULT 'client',
+	email VARCHAR(120) NOT NULL UNIQUE,
+    password CHAR(8) NOT NULL,
+    PRIMARY KEY(id),
+    FOREIGN KEY(id_person) REFERENCES PERSON(id)
+);
+
+CREATE TABLE esthetic.CLIENT (
+	id INT NOT NULL UNIQUE AUTO_INCREMENT,
+    id_user INT NOT NULL UNIQUE,
+    PRIMARY KEY(id),
+    FOREIGN KEY(id_user) REFERENCES USER(id)
+);
+
+CREATE TABLE esthetic.SPECIALTY (
+	id INT NOT NULL UNIQUE AUTO_INCREMENT,
+    name VARCHAR(100) NOT NULL,
+    PRIMARY KEY(id)
+);
+
+CREATE TABLE esthetic.SERVICE (
+	id INT NOT NULL UNIQUE AUTO_INCREMENT,
+    id_specialty INT NOT NULL,
+    name VARCHAR(100) NOT NULL,
+	description VARCHAR(600) NOT NULL,
+    price DECIMAL(11,2) NOT NULL,
+    duration_time_minutes INT NOT NULL DEFAULT 60,
+    PRIMARY KEY(id),
+    FOREIGN KEY(id_specialty) REFERENCES SPECIALTY(id)
+);
+
+CREATE TABLE esthetic.CART (
+	id INT NOT NULL UNIQUE AUTO_INCREMENT,
+    id_client INT NOT NULL UNIQUE,
+    PRIMARY KEY(id),
+	FOREIGN KEY(id_client) REFERENCES CLIENT(id)
+);
+
+CREATE TABLE esthetic.CART_ITEM (
+	id INT NOT NULL UNIQUE AUTO_INCREMENT,
+    id_cart INT NOT NULL,
+    id_service INT NOT NULL,
+    PRIMARY KEY(id),                  
+	FOREIGN KEY(id_cart) REFERENCES CART(id),
+	FOREIGN KEY(id_service) REFERENCES SERVICE(id)
+);
+
+CREATE TABLE esthetic.EMPLOYEE (
+	id INT NOT NULL UNIQUE AUTO_INCREMENT,
+    id_person INT NOT NULL UNIQUE,
+    date_of_hire DATE NOT NULL,
+    PRIMARY KEY(id),
+    FOREIGN KEY(id_person) REFERENCES PERSON(id)
+);
+
+CREATE TABLE esthetic.EMPLOYEE_SPECIALTY (
+	id INT NOT NULL UNIQUE AUTO_INCREMENT,
+    id_employee INT NOT NULL,
+    id_specialty INT NOT NULL,
+    PRIMARY KEY(id),
+    FOREIGN KEY(id_employee) REFERENCES EMPLOYEE(id),
+    FOREIGN KEY(id_specialty) REFERENCES SPECIALTY(id)
+);
+
+CREATE TABLE esthetic.WORK_SCHEDULE (
+	id INT NOT NULL UNIQUE AUTO_INCREMENT,
+	start_date TIMESTAMP NOT NULL,
+	end_date TIMESTAMP NOT NULL,
+    PRIMARY KEY(id)
+);
+
+CREATE TABLE esthetic.EMPLOYEE_WORK_SCHEDULE (
+	id INT NOT NULL UNIQUE AUTO_INCREMENT,
+	id_employee INT NOT NULL,
+	id_work_schedule INT NOT NULL,
+    PRIMARY KEY(id),
+    FOREIGN KEY(id_employee) REFERENCES EMPLOYEE(id),
+    FOREIGN KEY(id_work_schedule) REFERENCES WORK_SCHEDULE(id)
+);
+
+CREATE TABLE esthetic.ASSIGNED_SHIFT (
+	id INT NOT NULL UNIQUE AUTO_INCREMENT,
+	id_employee INT NOT NULL,
+	id_client INT NOT NULL,
+    id_work_schedule INT NOT NULL,
+    start_date TIMESTAMP NOT NULL,
+	end_date TIMESTAMP NOT NULL,
+    PRIMARY KEY(id),
+    FOREIGN KEY(id_employee) REFERENCES EMPLOYEE(id),
+    FOREIGN KEY(id_client) REFERENCES CLIENT(id),
+    FOREIGN KEY(id_work_schedule) REFERENCES WORK_SCHEDULE(id)
+);
+
+CREATE TABLE esthetic.SERVICE_ASSIGNED_SHIFT (
+	id INT NOT NULL UNIQUE AUTO_INCREMENT,
+    id_service INT NOT NULL,
+    id_assigned_shift INT NOT NULL,
+    PRIMARY KEY(id),
+    FOREIGN KEY(id_service) REFERENCES SERVICE(id),
+    FOREIGN KEY(id_assigned_shift) REFERENCES ASSIGNED_SHIFT(id)
+);
+
+CREATE TABLE esthetic.PURCHASE_ORDER (
+	id INT NOT NULL UNIQUE AUTO_INCREMENT,
+    status VARCHAR(5) NOT NULL DEFAULT 'OPEN',
+    PRIMARY KEY(id)                
+);
+
+CREATE TABLE esthetic.CLIENT_PURCHASE_ORDER (
+	id INT NOT NULL UNIQUE AUTO_INCREMENT,
+	id_client INT NOT NULL,
+	id_purchase_order INT NOT NULL,
+    PRIMARY KEY(id),
+    FOREIGN KEY(id_client) REFERENCES CLIENT(id),
+    FOREIGN KEY(id_purchase_order) REFERENCES PURCHASE_ORDER(id)
+);
+
+CREATE TABLE esthetic.PAYMENT (
+	id INT NOT NULL UNIQUE AUTO_INCREMENT,
+    id_purchase_orden INT NOT NULL,
+    amount DECIMAL(11,2) NOT NULL,
+    num_control INT NOT NULL UNIQUE,
+	date TIMESTAMP NOT NULL,
+    PRIMARY KEY(id),
+    FOREIGN KEY(id_purchase_orden) REFERENCES PURCHASE_ORDER(id)
+);
+
+CREATE TABLE esthetic.PROMOTION (
+	id INT NOT NULL UNIQUE AUTO_INCREMENT,
+    percentage DECIMAL(5,2) NOT NULL,
+	start_date TIMESTAMP NOT NULL,
+	end_date TIMESTAMP NOT NULL,
+    PRIMARY KEY(id)
+);
+
+CREATE TABLE esthetic.SERVICE_PROMOTION (
+	id INT NOT NULL UNIQUE AUTO_INCREMENT,
+    id_service INT NOT NULL,
+    id_promotion INT NOT NULL,
+    PRIMARY KEY(id),
+    FOREIGN KEY(id_service) REFERENCES SERVICE(id),
+    FOREIGN KEY(id_promotion) REFERENCES PROMOTION(id)
+);
+
+CREATE TABLE esthetic.PURCHASE_ORDER_ITEM (
+	id INT NOT NULL UNIQUE AUTO_INCREMENT,
+    id_purchase_order INT NOT NULL,
+    id_service INT NOT NULL,   
+    price DECIMAL(11,2) NOT NULL,
+    discount_percentage DECIMAL(5,2),
+    PRIMARY KEY(id),                  
+    FOREIGN KEY(id_purchase_order) REFERENCES PURCHASE_ORDER(id),
+	FOREIGN KEY(id_service) REFERENCES SERVICE(id)
+);
+
+CREATE TABLE esthetic.EMPLOYEE_PURCHASE_ORDEN_ITEM (
+	id INT NOT NULL UNIQUE AUTO_INCREMENT,
+	id_employee INT NOT NULL,
+	id_purchase_order_item INT NOT NULL,
+    PRIMARY KEY(id),
+    FOREIGN KEY(id_employee) REFERENCES EMPLOYEE(id),
+    FOREIGN KEY(id_purchase_order_item) REFERENCES PURCHASE_ORDER_ITEM(id)
+);
